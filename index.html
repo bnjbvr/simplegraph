@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple graph</title>
+    </head>
+    <body>
+        <div>
+            <div>
+                <label>Data:</label>
+                <textarea id="data" cols=80 rows=10></textarea>
+            </div>
+            <div>
+                <label>Categories (separated by spaces):</label>
+                <input type="text" id="categories" />
+            </div>
+            <div>
+                <label>Title:</label>
+                <input type="text" id="title" />
+            </div>
+            <input type="submit" id="create" value="Create" />
+        </div>
+
+        <div id="chart-container" style="width:100%">
+        </div>
+
+        <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+
+        <script>
+            var $data = $('#data');
+            var $title = $('#title');
+            var $categories = $('#categories');
+
+            // Code taken from AWFY, thanks h4writer/dvander :)
+            var query = window.location.hash.substring(1);
+            var items = query.split('&');
+            var queryParams = {};
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i].split('=');
+                queryParams[item[0]] = decodeURIComponent(item[1]);
+            }
+
+            if ('values' in queryParams) {
+                var title = queryParams['title'] || '';
+                var categories = queryParams['categories'] || '';
+                var lines = queryParams['values'];
+
+                $title.val(title);
+                $data.val(lines);
+                $categories.val(categories);
+
+                createGraph(title, categories, lines);
+            }
+
+            function createGraph(title, categories, lines) {
+                var lines = lines.trim().split('\n');
+                var series = [];
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var values = line.split(' ');
+                    var name = values.shift(0);
+                    values = values.map(function(x) { return parseFloat(x); });
+                    series.push({
+                        name: name,
+                        data: values
+                    });
+                }
+
+                categories = categories.split(',');
+                categories = categories.map(function(x) { return x.trim(); });
+
+                $('#chart-container').highcharts({
+                    chart: {
+                        type: 'bar'
+                    },
+                    xAxis: {
+                        categories: categories
+                    },
+                    title: {
+                        text: title
+                    },
+                    series: series
+                });
+
+                window.location.hash = "#title=" + title +
+                                       "&categories=" + categories.join(',') +
+                                       "&values=" + lines.join('\n');
+            }
+
+            $('#create').click(function() {
+                var lines = $data.val();
+                var title = $title.val();
+                var categories = $categories.val();
+                createGraph(title, categories, lines);
+            });
+
+        </script>
+    </body>
+</html>
