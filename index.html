@@ -20,6 +20,7 @@
                 <input type="text" id="title" />
             </div>
             <input type="submit" id="create" value="Create" />
+            <input type="submit" id="export" value="Export" />
         </div>
 
         <div id="chart-container" style="width:100%">
@@ -27,6 +28,8 @@
 
         <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
         <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
 
         <script>
             var $data = $('#data');
@@ -90,11 +93,18 @@
                                        "&values=" + lines.join('\n');
             }
 
-            $('#create').click(function() {
+            function createFromInput() {
                 var lines = $data.val();
                 var title = $title.val();
                 var categories = $categories.val();
                 createGraph(title, categories, lines);
+            }
+
+            $('#create').click(createFromInput);
+
+            $('#export').click(function() {
+                createFromInput();
+                $('#chart-container').highcharts().exportChartLocal();
             });
 
         </script>
