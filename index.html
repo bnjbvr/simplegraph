@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html style="height:100%">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Simple graph</title>
     </head>
-    <body>
+    <body style="height:100%">
+        <div id="chart-container" style="width:100%;height:90%">
+        </div>
+
         <div>
+            <h3>Change data</h3>
             <div>
                 <label>Data:</label>
                 <textarea id="data" cols=80 rows=10></textarea>
@@ -21,9 +25,6 @@
             </div>
             <input type="submit" id="create" value="Create" />
             <input type="submit" id="export" value="Export" />
-        </div>
-
-        <div id="chart-container" style="width:100%">
         </div>
 
         <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
