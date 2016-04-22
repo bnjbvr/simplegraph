@@ -12,7 +12,8 @@
         <div>
             <h3>Change data</h3>
             <div>
-                <label>Data:</label>
+                <label>Data: (one serie per line, first word is the title, then
+                values should be separated by spaces)</label>
                 <textarea id="data" cols=80 rows=10></textarea>
             </div>
             <div>
@@ -20,7 +21,11 @@
                 <input type="text" id="categories" />
             </div>
             <div>
-                <label>Title:</label>
+                <label>Y axis title:</label>
+                <input type="text" id="ytitle" />
+            </div>
+            <div>
+                <label>Overall title:</label>
                 <input type="text" id="title" />
             </div>
             <input type="submit" id="create" value="Create" />
@@ -35,6 +40,7 @@
         <script>
             var $data = $('#data');
             var $title = $('#title');
+            var $ytitle = $('#ytitle');
             var $categories = $('#categories');
 
             // Code taken from AWFY, thanks h4writer/dvander :)
@@ -48,28 +54,56 @@
 
             if ('values' in queryParams) {
                 var title = queryParams['title'] || '';
+                var ytitle = queryParams['ytitle'] || 'Values';
                 var categories = queryParams['categories'] || '';
                 var lines = queryParams['values'];
 
                 $title.val(title);
                 $data.val(lines);
                 $categories.val(categories);
+                $ytitle.val(ytitle);
 
-                createGraph(title, categories, lines);
+                createGraph(title, ytitle, categories, lines);
             }
 
-            function createGraph(title, categories, lines) {
+            function createGraph(title, ytitle, categories, lines) {
                 var lines = lines.trim().split('\n');
                 var series = [];
 
                 for (var i = 0; i < lines.length; i++) {
                     var line = lines[i];
                     var values = line.split(' ');
-                    var name = values.shift(0);
-                    values = values.map(function(x) { return parseFloat(x); });
+                    var serieName = values.shift(0);
+                    var data = [];
+
+                    for (var j = 0; j < values.length; j++) {
+                        var value = values[j];
+
+                        var y;
+                        var name = null;
+
+                        var split = value.split(';');
+                        if (split.length === 1) {
+                            y = parseFloat(value);
+                        } else {
+                            y = parseFloat(split[0]);
+                            name = split[1];
+                        }
+
+                        if (name) {
+                            data.push({
+                                y: y,
+                                name: name,
+                                dataLabels: { enabled: true, format: '{point.name}' }
+                            });
+                        } else {
+                            data.push(y);
+                        }
+                    }
+
                     series.push({
-                        name: name,
-                        data: values
+                        name: serieName,
+                        data: data
                     });
                 }
 
@@ -83,22 +117,29 @@
                     xAxis: {
                         categories: categories
                     },
+                    yAxis: {
+                        title: {
+                            text: ytitle
+                        }
+                    },
                     title: {
                         text: title
                     },
                     series: series
                 });
 
-                window.location.hash = "#title=" + title +
-                                       "&categories=" + categories.join(',') +
-                                       "&values=" + lines.join('\n');
+                window.location.hash = "#title=" + encodeURIComponent(title) +
+                                       "&ytitle=" + encodeURIComponent(ytitle) +
+                                       "&categories=" + encodeURIComponent(categories.join(',')) +
+                                       "&values=" + encodeURIComponent(lines.join('\n'));
             }
 
             function createFromInput() {
                 var lines = $data.val();
                 var title = $title.val();
+                var ytitle = $ytitle.val();
                 var categories = $categories.val();
-                createGraph(title, categories, lines);
+                createGraph(title, ytitle, categories, lines);
             }
 
             $('#create').click(createFromInput);
